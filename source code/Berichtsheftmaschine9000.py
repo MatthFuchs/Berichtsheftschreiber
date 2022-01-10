@@ -1,81 +1,103 @@
 from mailmerge import MailMerge
+import random,datetime
+
+def datasheetwriter():
+    with open("datasheet.txt", "w") as enddata:
+        enddata.write(str(BNrneu) + ', ' + Name + ', ' + Jahr + ', ' + NameIch + ', ' )
+        enddata.close()
+    with open("datasheet.txt", "a") as enddata:
+        for wert in presets:
+            enddata.write(wert+", ")
+        enddata.close()
+
+def neuerdatechooser():
+
+    global Datum1,Datum2,tagdt
+    tagdtneuewoche=tagdt + datetime.timedelta(days=7)
+    formatdatumneuewoche=tagdtneuewoche.strftime('%d.%m')
+    Datum1=formatdatumneuewoche
+    tagdt = datetime.datetime.strptime(Datum1, '%d.%m')
+    tagdtneu = tagdt + datetime.timedelta(days=4)
+    Datum2 = tagdtneu.strftime('%d.%m')
 
 def fertigmachen():
 
     fertig= input("Fertig? Y/N: ")
     if fertig=="Y" or fertig == "y":
-        with open("datasheet.txt", "w") as enddata:
-            enddata.write(str(BNrneu)+', '+Name+', '+Jahr+', '+NameIch+', '+TäglicheAufgabe1+', '+TäglicheAufgabe2+', '+TäglicheAufgabe3+', '+TäglicheAufgabe4+', '+TäglicheAufgabe5)
-            enddata.close()
-            print("Dokument erfolgreich erzeugt (hoffentlich)!")
+            datasheetwriter()
+            print("Dokument erfolgreich erzeugt!")
             print("Enter drücken um das Programm zu schließen! \nBis dann :)")
             input("")
     elif fertig=="N" or fertig == "n":
-        print("Dokument erfolgreich erzeugt (hoffentlich)!")
-        with open("datasheet.txt", "w") as enddata:
-            enddata.write(str(BNrneu)+', '+Name+', '+Jahr+', '+NameIch+', '+TäglicheAufgabe1+', '+TäglicheAufgabe2+', '+TäglicheAufgabe3+', '+TäglicheAufgabe4+', '+TäglicheAufgabe5)
-            enddata.close()
+        print("Dokument erfolgreich erzeugt!")
+        datasheetwriter()
         berichtsheftmaschine9000()
     else:
         print("Falsche Eingabe!")
-        with open("datasheet.txt", "w") as enddata:
-            enddata.write(str(BNrneu)+', '+Name+', '+Jahr+', '+NameIch+', '+TäglicheAufgabe1+', '+TäglicheAufgabe2+', '+TäglicheAufgabe3+', '+TäglicheAufgabe4+', '+TäglicheAufgabe5)
-            enddata.close()
+        datasheetwriter()
         fertigmachen()
+
+def chooser():
+    kliste = [1,2,3,4,5]
+    kwert=[]
+    kwert=random.choices(kliste,weights=(1,5,6,5,2),k=1)
+    #print(str(kwert[0]))
+    global aufgabenlisterandom
+    aufgabenlisterandom=[]
+    aufgabenlisterandom=(random.sample(presets,kwert[0]))
+
+def tagwahl():
+    global Datum1,Datum2,tagdt,tagwahleins
+    tagwahleins=False
+    Datum1 = input("Von welchem Tag aus? (tt.mm): ")
+    tagdt = datetime.datetime.strptime(Datum1, '%d.%m')
+    tagdtneu = tagdt + datetime.timedelta(days=4)
+    Datum2 = tagdtneu.strftime('%d.%m')
+
 
 def berichtsheftmaschine9000():
     #Gespeicherte Daten einlesen
     with open("datasheet.txt") as data:
+        global datalist
         inhalt=data.read()
         datalist=inhalt.split(', ')
+        set(datalist)
+        datalist=datalist[:-1]
 
     #Werte Verteilen Header
-    global BNr,Name,Jahr,NameIch
+    global BNr,Name,Jahr,NameIch,wocheeins
     BNr=datalist[0]
     print("Berichtsheft Nr.: "+BNr)
     Name=datalist[1]
     Jahr=datalist[2]
     NameIch = (datalist[3])
-    Datum1=input("Woche vom: ")
-    Datum2= input("bis zum: ")
+
+    if tagwahleins!=False:
+        tagwahl()
+    else:
+        neuerdatechooser()
 
     #############Wochentage bearbeiten################
-
-    Wochentag=["Montag","Dienstag","Mittwoch","Donnerstag","Freitag"]
     Aktivität=range(5)
+    global presets
+    presets=datalist[4::]
+    wochenaktivitäten = []
 
-    global TäglicheAufgabe1,TäglicheAufgabe2,TäglicheAufgabe3,TäglicheAufgabe4,TäglicheAufgabe5
 
-    TäglicheAufgabe1=datalist[4]
-    TäglicheAufgabe2=datalist[5]
-    TäglicheAufgabe3=datalist[6]
-    TäglicheAufgabe4=datalist[7]
-    TäglicheAufgabe5=datalist[8]
+    for Aktiv in range(len(Aktivität)):
+        chooser()
+        x = len(aufgabenlisterandom)   # 3
+        for aufgabe in aufgabenlisterandom:
+            wochenaktivitäten.append(aufgabe)
+        while x < 5:
+            wochenaktivitäten.append(" ")
+            x=x+1
+            #print("Filler: "+str(x))
 
-    presets=[datalist[4],datalist[5],datalist[6],datalist[7],datalist[8]]
-    wochenaktivitäten=[]
-    #print(len(wochenaktivitäten))
-
-    for Tag in range(len(Wochentag)):
-        print(Wochentag[Tag])
-        print("1: "+TäglicheAufgabe1+"\n2: "+TäglicheAufgabe2+"\n3: "+TäglicheAufgabe3+"\n4: "+TäglicheAufgabe4+"\n5: "+TäglicheAufgabe5+"\n0: Eigene Eingabe")
-        for Aktiv in range(len(Aktivität)):
-            print(Wochentag[Tag]+" Aktivität "+str(Aktiv+1)+": ")
-            reinschreiben=input()
-            if reinschreiben == "":
-                wochenaktivitäten.append(" ")
-            if reinschreiben != "0":
-                try:
-                    wochenaktivitäten.append(presets[int(reinschreiben)-1])
-                except:
-                    pass
-            else:
-                wochenaktivitäten.append(input("Inhalt: "))
-
-    #print(wochenaktivitäten)
 
 
     ###########Ausfüllen##############
+
 
     with MailMerge ("Berichtsheft_Vorlage.docx") as dokument:
         feldname = (dokument.get_merge_fields())
@@ -101,7 +123,10 @@ def checkdatasheet():
         print("Bitte zuerst initial.exe laufen lassen!")
         input("Enter drücken zum beenden")
     else:
+        global tagwahleins
+        tagwahleins=True
         berichtsheftmaschine9000()
+
 checkdatasheet()
 
 
